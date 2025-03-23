@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:media_viewer/utils/heic_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:transparent_image/transparent_image.dart';
 import '../models/media_item.dart';
@@ -56,12 +57,38 @@ class _MediaGridItemState extends State<MediaGridItem>
     // Handle local files directly
     if (widget.mediaItem.isLocal) {
       setState(() {
-        _localFile = widget.mediaItem.localFile;
-        _isLoaded = true;
+        _isLoading = true;
       });
+
+      try {
+        final file = widget.mediaItem.localFile;
+        if (file != null) {
+          // Check if it's a HEIC file and convert if needed
+          if (HeicHandler.isHeicFile(file.path)) {
+            final convertedFile = await HeicHandler.getDisplayableImage(file);
+            setState(() {
+              _localFile = convertedFile;
+              _isLoaded = true;
+              _isLoading = false;
+            });
+          } else {
+            setState(() {
+              _localFile = file;
+              _isLoaded = true;
+              _isLoading = false;
+            });
+          }
+        }
+      } catch (e) {
+        setState(() {
+          _error = 'Error loading thumbnail';
+          _isLoading = false;
+        });
+      }
       return;
     }
 
+    // Keep existing code for cloud items and other scenarios
     // For cloud items with thumbnails already cached
     if (widget.mediaItem.thumbnailPath != null) {
       setState(() {
@@ -149,9 +176,12 @@ class _MediaGridItemState extends State<MediaGridItem>
         onTap: widget.onTap,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          // This is the key fix - set mainAxisSize to min so Column doesn't try to expand infinitely
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Media thumbnail (takes most of the space)
-            Expanded(
+            // Media thumbnail
+            AspectRatio(
+              aspectRatio: 1.0, // Square aspect ratio for the media thumbnail
               child: Stack(
                 fit: StackFit.expand,
                 children: [

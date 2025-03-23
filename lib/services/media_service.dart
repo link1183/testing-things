@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
-import 'package:heic_to_jpg/heic_to_jpg.dart';
+import 'package:media_viewer/utils/heic_handler.dart';
 import '../models/media_item.dart';
 import '../models/media_source.dart';
 import 'storage_service.dart';
@@ -106,20 +106,7 @@ class MediaService extends ChangeNotifier {
   }
 
   Future<File?> handleHeicFile(File file) async {
-    try {
-      final extension = file.path.split('.').last.toLowerCase();
-      if (extension == 'heic' || extension == 'heif') {
-        // Convert HEIC to JPG
-        final jgpPath = await HeicToJpg.convert(file.path);
-        if (jgpPath != null) {
-          return File(jgpPath);
-        }
-      }
-      return file;
-    } catch (e) {
-      print('Error handling HEIC file: $e');
-      return file;
-    }
+    return await HeicHandler.getDisplayableImage(file);
   }
 
   void _setLoading(bool loading) {

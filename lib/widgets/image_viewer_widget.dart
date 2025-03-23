@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:media_viewer/utils/heic_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
@@ -35,12 +36,44 @@ class _ImageViewerWidgetState extends State<ImageViewerWidget> {
   Future<void> _loadImageFile() async {
     if (widget.mediaItem.isLocal) {
       setState(() {
-        _localFile = widget.mediaItem.localFile;
+        _isLoading = true;
       });
+
+      try {
+        final file = widget.mediaItem.localFile;
+        if (file != null) {
+          // Check if it's a HEIC file and convert if needed
+          if (HeicHandler.isHeicFile(file.path)) {
+            final displayableFile = await HeicHandler.getDisplayableImage(file);
+
+            if (displayableFile != null) {
+              setState(() {
+                _localFile = displayableFile;
+                _isLoading = false;
+              });
+            } else {
+              setState(() {
+                _error = 'Unable to dispaly HEIC image';
+                _isLoading = false;
+              });
+            }
+          } else {
+            setState(() {
+              _localFile = file;
+              _isLoading = false;
+            });
+          }
+        }
+      } catch (e) {
+        setState(() {
+          _error = 'Error loading image: $e';
+          _isLoading = false;
+        });
+      }
       return;
     }
 
-    // Download cloud file
+    // Download cloud file - keep existing code for cloud files
     setState(() {
       _isLoading = true;
       _error = null;

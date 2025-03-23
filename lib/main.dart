@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:media_viewer/services/navigation_service.dart';
 import 'package:media_viewer/services/service_locator.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
@@ -69,6 +70,7 @@ class AppContent extends StatelessWidget {
           ),
           themeMode: preferences.isDarkMode ? ThemeMode.dark : ThemeMode.light,
           home: MainScreen(),
+          navigatorKey: NavigationService.navigatorKey,
         );
       },
     );
@@ -127,7 +129,9 @@ class _MainScreenState extends State<MainScreen> {
             extended: MediaQuery.of(context).size.width > 1200,
             selectedIndex: _selectedIndex,
             onDestinationSelected: _onItemTapped,
-            labelType: NavigationRailLabelType.all,
+            labelType: MediaQuery.of(context).size.width > 1200
+                ? NavigationRailLabelType.none
+                : NavigationRailLabelType.all,
             destinations: [
               NavigationRailDestination(
                 icon: Icon(Icons.home),

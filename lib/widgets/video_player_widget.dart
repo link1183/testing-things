@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -42,13 +43,33 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
     try {
       if (widget.mediaItem.isLocal) {
-        _localFile = widget.mediaItem.localFile;
+        final file = widget.mediaItem.localFile;
+        if (file == null || !await file.exists()) {
+          throw Exception('Video file not found on device');
+        }
+        _localFile = file;
       } else {
-        // Download cloud file
+        // Show a more specific loading message
+        setState(() {
+          _isLoading = true;
+          // We don't set error here as we're just updating the loading state
+        });
+
+        // Download cloud file with timeout
         final storageService =
             Provider.of<StorageService>(context, listen: false);
-        _localFile =
-            await storageService.getCachedOrDownloadThumbnail(widget.mediaItem);
+        _localFile = await storageService
+            .getCachedOrDownloadThumbnail(widget.mediaItem)
+            .timeout(
+          Duration(seconds: 30),
+          onTimeout: () {
+            throw TimeoutException('Video download timed out after 30 seconds');
+          },
+        );
+
+        if (_localFile == null) {
+          throw Exception('Failed to download video file');
+        }
       }
 
       if (_localFile != null) {
@@ -59,9 +80,14 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
           _isLoading = false;
         });
       }
+    } on TimeoutException catch (_) {
+      setState(() {
+        _error = 'Video download timed out. Please try again.';
+        _isLoading = false;
+      });
     } catch (e) {
       setState(() {
-        _error = 'Error loading video: $e';
+        _error = 'Error loading video: ${e.toString().split('\n')[0]}';
         _isLoading = false;
       });
     }

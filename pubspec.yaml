@@ -25,6 +25,9 @@ dependencies:
   chewie: ^1.11.0
   flutter_cache_manager: ^3.4.1
   transparent_image: ^2.0.1
+  path: ^1.9.1
+  crypto: ^3.0.6
+  image: ^4.5.3
 
   # Google Drive integration
   googleapis: ^14.0.0
