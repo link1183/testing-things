@@ -63,15 +63,18 @@ class AppContent extends StatelessWidget {
         return MaterialApp(
           title: 'Media Viewer',
           theme: ThemeData(
-            primarySwatch: Colors.orange,
-            brightness:
-                preferences.isDarkMode ? Brightness.dark : Brightness.light,
             useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.orange,
+              brightness: Brightness.light,
+            ),
           ),
           darkTheme: ThemeData(
-            brightness: Brightness.dark,
-            primarySwatch: Colors.orange,
             useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.orange,
+              brightness: Brightness.dark,
+            ),
           ),
           themeMode: preferences.isDarkMode ? ThemeMode.dark : ThemeMode.light,
           home: MainScreen(),
@@ -137,6 +140,11 @@ class _MainScreenState extends State<MainScreen> {
             labelType: MediaQuery.of(context).size.width > 1200
                 ? NavigationRailLabelType.none
                 : NavigationRailLabelType.all,
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            selectedIconTheme: IconThemeData(
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+            indicatorColor: Theme.of(context).colorScheme.primaryContainer,
             destinations: [
               NavigationRailDestination(
                 icon: Icon(Icons.home),
