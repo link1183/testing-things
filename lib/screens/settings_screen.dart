@@ -79,21 +79,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
         }
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Cache cleared successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Cache cleared successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
 
       await _calculateCacheSize();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error clearing cache: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error clearing cache: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       setState(() {
         _clearingCache = false;
@@ -105,12 +109,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final mediaService = Provider.of<MediaService>(context, listen: false);
     await mediaService.refreshMedia();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Media library refreshed'),
-        backgroundColor: Colors.green,
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Media library refreshed'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
   }
 
   Future<void> _showResetConfirmDialog() async {
@@ -140,17 +146,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
       },
     );
 
-    if (confirmed == true) {
+    if (confirmed == true && mounted) {
       final preferencesService =
           Provider.of<PreferencesService>(context, listen: false);
       await preferencesService.resetAllPreferences();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('All settings have been reset to defaults'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('All settings have been reset to defaults'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     }
   }
 

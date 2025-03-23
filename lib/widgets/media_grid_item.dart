@@ -49,6 +49,11 @@ class _MediaGridItemState extends State<MediaGridItem>
     _prepareMedia();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   // Load or prepare the media for display
   Future<void> _prepareMedia() async {
     // Skip if already prepared
@@ -56,6 +61,8 @@ class _MediaGridItemState extends State<MediaGridItem>
 
     // Handle local files directly
     if (widget.mediaItem.isLocal) {
+      // Check if mounted before setting state
+      if (!mounted) return;
       setState(() {
         _isLoading = true;
       });
@@ -66,12 +73,16 @@ class _MediaGridItemState extends State<MediaGridItem>
           // Check if it's a HEIC file and convert if needed
           if (HeicHandler.isHeicFile(file.path)) {
             final convertedFile = await HeicHandler.getDisplayableImage(file);
+            // Check if mounted again after async operation
+            if (!mounted) return;
             setState(() {
               _localFile = convertedFile;
               _isLoaded = true;
               _isLoading = false;
             });
           } else {
+            // Check if mounted before setting state
+            if (!mounted) return;
             setState(() {
               _localFile = file;
               _isLoaded = true;
@@ -80,6 +91,8 @@ class _MediaGridItemState extends State<MediaGridItem>
           }
         }
       } catch (e) {
+        // Check if mounted before setting error state
+        if (!mounted) return;
         setState(() {
           _error = 'Error loading thumbnail';
           _isLoading = false;
@@ -88,9 +101,10 @@ class _MediaGridItemState extends State<MediaGridItem>
       return;
     }
 
-    // Keep existing code for cloud items and other scenarios
     // For cloud items with thumbnails already cached
     if (widget.mediaItem.thumbnailPath != null) {
+      // Check if mounted before setting state
+      if (!mounted) return;
       setState(() {
         _localFile = File(widget.mediaItem.thumbnailPath!);
         _isLoaded = true;
@@ -100,6 +114,8 @@ class _MediaGridItemState extends State<MediaGridItem>
 
     // For cloud items with direct download URLs
     if (widget.mediaItem.downloadUrl != null) {
+      // Check if mounted before setting state
+      if (!mounted) return;
       setState(() {
         _thumbnailUrl = widget.mediaItem.downloadUrl;
         _isLoaded = true;
@@ -109,12 +125,13 @@ class _MediaGridItemState extends State<MediaGridItem>
 
     // Need to download the thumbnail
     if (!_isLoaded && !_isLoading) {
-      _downloadThumbnail();
+      await _downloadThumbnail();
     }
   }
 
   // Download a thumbnail for cloud-based media
   Future<void> _downloadThumbnail() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _error = null;
@@ -129,7 +146,7 @@ class _MediaGridItemState extends State<MediaGridItem>
         final driveApi = storageService.driveApi;
 
         if (driveApi != null && widget.mediaItem.cloudId != null) {
-          // Access Google Drive thumbnail service for efficient loading
+          if (!mounted) return;
           setState(() {
             _thumbnailUrl =
                 'https://drive.google.com/thumbnail?id=${widget.mediaItem.cloudId}&sz=w320';
@@ -144,6 +161,7 @@ class _MediaGridItemState extends State<MediaGridItem>
       final file =
           await storageService.getCachedOrDownloadThumbnail(widget.mediaItem);
 
+      if (!mounted) return;
       setState(() {
         _localFile = file;
         _isLoaded = true;

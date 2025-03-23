@@ -54,6 +54,8 @@ class MediaItem {
       return MediaType.video;
     }
 
+    print('Unknown file extension: $ext');
+
     return MediaType.unknown;
   }
 

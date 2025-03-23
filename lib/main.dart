@@ -3,6 +3,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_viewer/services/navigation_service.dart';
 import 'package:media_viewer/services/service_locator.dart';
 import 'package:media_viewer/utils/file_utils.dart';
+import 'package:media_viewer/utils/heic_converter_pool.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import 'services/media_service.dart';
@@ -17,6 +18,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await FileUtils.cleanupOldTempFiles();
+
+  await HeicConverterPool.initialize();
 
   MediaKit.ensureInitialized();
 
