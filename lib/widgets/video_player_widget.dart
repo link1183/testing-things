@@ -48,7 +48,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         final storageService =
             Provider.of<StorageService>(context, listen: false);
         _localFile =
-            await storageService.downloadGoogleDriveFile(widget.mediaItem);
+            await storageService.getCachedOrDownloadThumbnail(widget.mediaItem);
       }
 
       if (_localFile != null) {

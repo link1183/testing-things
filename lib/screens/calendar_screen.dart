@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:media_viewer/utils/responsive_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../services/media_service.dart';
@@ -109,7 +110,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           child: GridView.builder(
             padding: EdgeInsets.all(8),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: _calculateColumnCount(context),
+              crossAxisCount: calculateGridColumns(context),
               mainAxisSpacing: 8,
               crossAxisSpacing: 8,
               childAspectRatio: 1,
@@ -139,19 +140,5 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   String _formatDate(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
-
-  int _calculateColumnCount(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-
-    if (width > 1200) {
-      return 6;
-    } else if (width > 900) {
-      return 5;
-    } else if (width > 600) {
-      return 4;
-    } else {
-      return 3;
-    }
   }
 }

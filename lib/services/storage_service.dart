@@ -57,6 +57,41 @@ class StorageService extends ChangeNotifier {
     }
   }
 
+  Future<File?> getCachedOrDownloadThumbnail(MediaItem mediaItem) async {
+    if (mediaItem.isLocal) {
+      return mediaItem.localFile;
+    }
+
+    final cacheDir = await getTemporaryDirectory();
+    final cachedThumbFile =
+        File('${cacheDir.path}/thumbnails/${mediaItem.id}.jpg');
+
+    if (await cachedThumbFile.exists()) {
+      return cachedThumbFile;
+    }
+
+    await Directory('${cacheDir.path}/thumbnails').create(recursive: true);
+
+    try {
+      if (mediaItem.cloudId != null && _driveApi != null) {
+        final thumbnailUrl =
+            'https://drive.google.com/thumbnail?id=${mediaItem.cloudId}&sz=w320';
+
+        final response = await http.get(Uri.parse(thumbnailUrl));
+        if (response.statusCode == 200) {
+          await cachedThumbFile.writeAsBytes(response.bodyBytes);
+          return cachedThumbFile;
+        }
+      }
+
+      final fullFile = await downloadGoogleDriveFile(mediaItem);
+      return fullFile;
+    } catch (e) {
+      print('Error getting thumbnails: $e');
+      return null;
+    }
+  }
+
   // Local storage methods
   Future<List<MediaItem>> getLocalMediaFiles() async {
     final List<MediaItem> mediaItems = [];

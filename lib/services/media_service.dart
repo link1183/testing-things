@@ -85,8 +85,11 @@ class MediaService extends ChangeNotifier {
   }
 
   Future<MediaItem?> getMediaItemById(String id) async {
-    return _allMedia.firstWhere((media) => media.id == id,
-        orElse: () => null as MediaItem);
+    try {
+      return _allMedia.firstWhere((media) => media.id == id);
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<List<MediaItem>> getMediaByType(MediaType type) async {

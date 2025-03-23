@@ -115,7 +115,7 @@ class _MediaGridItemState extends State<MediaGridItem>
 
       // If we can't get a thumbnail, download the actual file
       final file =
-          await storageService.downloadGoogleDriveFile(widget.mediaItem);
+          await storageService.getCachedOrDownloadThumbnail(widget.mediaItem);
 
       setState(() {
         _localFile = file;

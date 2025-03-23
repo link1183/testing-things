@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:media_viewer/utils/responsive_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../services/media_service.dart';
@@ -166,7 +167,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
     }
 
     return MasonryGridView.count(
-      crossAxisCount: _calculateColumnCount(context),
+      crossAxisCount: calculateGridColumns(context),
       mainAxisSpacing: 4,
       crossAxisSpacing: 4,
       itemCount: media.length,
@@ -206,19 +207,5 @@ class _GalleryScreenState extends State<GalleryScreen> {
 
       return true;
     }).toList();
-  }
-
-  int _calculateColumnCount(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-
-    if (width > 1200) {
-      return 5;
-    } else if (width > 900) {
-      return 4;
-    } else if (width > 600) {
-      return 3;
-    } else {
-      return 2;
-    }
   }
 }

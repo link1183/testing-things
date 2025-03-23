@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:media_viewer/screens/media_viewer_screen.dart';
+import 'package:media_viewer/utils/responsive_utils.dart';
 import 'package:media_viewer/widgets/media_grid_item.dart';
 import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
@@ -320,7 +321,8 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
         return GridView.builder(
           padding: EdgeInsets.all(16),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: _calculateColumnCount(context),
+            crossAxisCount:
+                calculateGridColumns(context, type: GridType.collection),
             childAspectRatio: 0.8,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
@@ -544,20 +546,6 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
   String _formatDate(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
-
-  int _calculateColumnCount(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-
-    if (width > 1200) {
-      return 5;
-    } else if (width > 900) {
-      return 4;
-    } else if (width > 600) {
-      return 3;
-    } else {
-      return 2;
-    }
-  }
 }
 
 // Screen to display collection contents
@@ -671,7 +659,7 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
           return GridView.builder(
             padding: EdgeInsets.all(8),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: _calculateColumnCount(context),
+              crossAxisCount: calculateGridColumns(context),
               childAspectRatio: 1,
               crossAxisSpacing: 8,
               mainAxisSpacing: 8,
@@ -911,20 +899,6 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
       );
     }
   }
-
-  int _calculateColumnCount(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-
-    if (width > 1200) {
-      return 6;
-    } else if (width > 900) {
-      return 5;
-    } else if (width > 600) {
-      return 4;
-    } else {
-      return 3;
-    }
-  }
 }
 
 // Screen for selecting media to add to a collection
@@ -1097,7 +1071,7 @@ class _MediaSelectionScreenState extends State<MediaSelectionScreen> {
         return GridView.builder(
           padding: EdgeInsets.all(8),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: _calculateColumnCount(context),
+            crossAxisCount: calculateGridColumns(context),
             childAspectRatio: 1,
             crossAxisSpacing: 8,
             mainAxisSpacing: 8,
@@ -1213,20 +1187,6 @@ class _MediaSelectionScreenState extends State<MediaSelectionScreen> {
           backgroundColor: Colors.red,
         ),
       );
-    }
-  }
-
-  int _calculateColumnCount(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-
-    if (width > 1200) {
-      return 6;
-    } else if (width > 900) {
-      return 5;
-    } else if (width > 600) {
-      return 4;
-    } else {
-      return 3;
     }
   }
 }

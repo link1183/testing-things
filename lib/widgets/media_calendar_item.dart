@@ -59,7 +59,7 @@ class _MediaCalendarItemState extends State<MediaCalendarItem> {
         final storageService =
             Provider.of<StorageService>(context, listen: false);
         final file =
-            await storageService.downloadGoogleDriveFile(widget.mediaItem);
+            await storageService.getCachedOrDownloadThumbnail(widget.mediaItem);
 
         setState(() {
           _localFile = file;

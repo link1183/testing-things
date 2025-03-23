@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:media_viewer/services/service_locator.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import 'services/media_service.dart';
@@ -25,29 +26,29 @@ void main() async {
     await windowManager.focus();
   });
 
-  final preferencesService = PreferencesService();
-  await preferencesService.init();
+  await setupServiceLocator();
 
-  final storageService = StorageService();
-  await storageService.init();
-
-  final mediaService = MediaService(storageService);
-  await mediaService.init();
-
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => preferencesService),
-        ChangeNotifierProvider(create: (_) => storageService),
-        ChangeNotifierProvider(create: (_) => mediaService),
-      ],
-      child: App(),
-    ),
-  );
+  runApp(App());
 }
 
 class App extends StatelessWidget {
   const App({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: getIt<PreferencesService>()),
+        ChangeNotifierProvider.value(value: getIt<StorageService>()),
+        ChangeNotifierProvider.value(value: getIt<MediaService>()),
+      ],
+      child: AppContent(),
+    );
+  }
+}
+
+class AppContent extends StatelessWidget {
+  const AppContent({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +124,7 @@ class _MainScreenState extends State<MainScreen> {
       body: Row(
         children: [
           NavigationRail(
-            extended: MediaQuery.of(context).size.width > 10000,
+            extended: MediaQuery.of(context).size.width > 1200,
             selectedIndex: _selectedIndex,
             onDestinationSelected: _onItemTapped,
             labelType: NavigationRailLabelType.all,
