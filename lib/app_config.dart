@@ -21,5 +21,4 @@ class AppConfig {
   // Feature flags
   static const bool enableCloudIntegration = true;
   static const bool enableVideoPlayback = true;
-  static const bool enableCollections = true;
 }

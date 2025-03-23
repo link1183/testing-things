@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:media_viewer/services/navigation_service.dart';
 import 'package:media_viewer/services/service_locator.dart';
+import 'package:media_viewer/utils/file_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 import 'services/media_service.dart';
@@ -9,11 +11,14 @@ import 'services/preferences_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/gallery_screen.dart';
 import 'screens/calendar_screen.dart';
-import 'screens/collections_screen.dart';
 import 'screens/settings_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await FileUtils.cleanupOldTempFiles();
+
+  MediaKit.ensureInitialized();
 
   await windowManager.ensureInitialized();
   WindowOptions windowOptions = WindowOptions(
@@ -58,14 +63,14 @@ class AppContent extends StatelessWidget {
         return MaterialApp(
           title: 'Media Viewer',
           theme: ThemeData(
-            primarySwatch: Colors.blue,
+            primarySwatch: Colors.orange,
             brightness:
                 preferences.isDarkMode ? Brightness.dark : Brightness.light,
             useMaterial3: true,
           ),
           darkTheme: ThemeData(
             brightness: Brightness.dark,
-            primarySwatch: Colors.blue,
+            primarySwatch: Colors.orange,
             useMaterial3: true,
           ),
           themeMode: preferences.isDarkMode ? ThemeMode.dark : ThemeMode.light,
@@ -146,10 +151,6 @@ class _MainScreenState extends State<MainScreen> {
                 label: Text('Calendar'),
               ),
               NavigationRailDestination(
-                icon: Icon(Icons.collections),
-                label: Text('Collections'),
-              ),
-              NavigationRailDestination(
                 icon: Icon(Icons.settings),
                 label: Text('Settings'),
               ),
@@ -163,7 +164,6 @@ class _MainScreenState extends State<MainScreen> {
                 HomeScreen(),
                 GalleryScreen(),
                 CalendarScreen(),
-                CollectionsScreen(),
                 SettingsScreen(),
               ],
               onPageChanged: (index) {

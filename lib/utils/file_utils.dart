@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:path/path.dart' as path;
 import 'package:flutter/foundation.dart';
 import 'package:crypto/crypto.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import '../services/file_type_service.dart';
 
@@ -11,6 +12,46 @@ class FileUtils {
   /// Get the file extension from a path (without the dot)
   static String getFileExtension(String filePath) {
     return path.extension(filePath).toLowerCase().replaceFirst('.', '');
+  }
+
+  static Future<void> cleanupOldTempFiles() async {
+    try {
+      final tempDir = await getAppTempDirectory();
+      if (await tempDir.exists()) {
+        final entities = tempDir.listSync(recursive: true);
+        final now = DateTime.now();
+
+        for (final entity in entities) {
+          if (entity is File) {
+            final stat = await entity.stat();
+            final fileAge = now.difference(stat.modified);
+
+            // Delete files older than 7 days
+            if (fileAge.inDays > 7) {
+              await entity.delete();
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print('Error cleaning up old temp files: $e');
+    }
+  }
+
+  /// Returns a custom application-specific temporary directory
+  static Future<Directory> getAppTempDirectory() async {
+    // Get the application's documents directory
+    final appDocDir = await getApplicationDocumentsDirectory();
+
+    // Create a dedicated temp folder within the app's documents directory
+    final appTempDir = Directory(path.join(appDocDir.path, 'temp'));
+
+    // Create the directory if it doesn't exist
+    if (!await appTempDir.exists()) {
+      await appTempDir.create(recursive: true);
+    }
+
+    return appTempDir;
   }
 
   /// Get the file name from a path

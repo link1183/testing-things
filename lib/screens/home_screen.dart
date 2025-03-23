@@ -80,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
             actions: [
               IconButton(
                 icon: Icon(Icons.refresh),
-                onPressed: () => mediaService.loadRandomMediaOnStartup(),
+                onPressed: () => mediaService.refreshRandomMedia(),
                 tooltip: 'Load another random media',
               ),
               IconButton(
@@ -155,9 +155,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildMediaPreview(MediaItem mediaItem) {
     if (mediaItem.isImage) {
-      return ImageViewerWidget(mediaItem: mediaItem);
+      return ImageViewerWidget(
+        key: ValueKey(mediaItem.id),
+        mediaItem: mediaItem,
+      );
     } else if (mediaItem.isVideo) {
-      return VideoPlayerWidget(mediaItem: mediaItem);
+      return VideoPlayerWidget(
+        key: ValueKey(mediaItem.id),
+        mediaItem: mediaItem,
+      );
     } else {
       return Container(
         padding: EdgeInsets.all(24),

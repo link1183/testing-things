@@ -2,10 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_viewer/models/media_source.dart';
-import 'package:media_viewer/screens/collections_screen.dart';
-import 'package:provider/provider.dart';
 import '../models/media_item.dart';
-import '../services/media_service.dart';
 import '../widgets/image_viewer_widget.dart';
 import '../widgets/video_player_widget.dart';
 import '../widgets/loading_widget.dart';
@@ -119,168 +116,6 @@ class _MediaViewerScreenState extends State<MediaViewerScreen>
           _animationController.forward();
         });
       }
-    });
-  }
-
-  void _showCollectionSelectionDialog() {
-    final collectionsManager = CollectionsManager();
-
-    // Initialize collections
-    collectionsManager.init().then((_) {
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        builder: (context) {
-          return StatefulBuilder(
-            builder: (context, setState) {
-              final collections = collectionsManager.collections;
-              final mediaId = _currentMedia.id;
-
-              return DraggableScrollableSheet(
-                initialChildSize: 0.5,
-                minChildSize: 0.3,
-                maxChildSize: 0.8,
-                expand: false,
-                builder: (context, scrollController) {
-                  return Column(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            Text(
-                              'Add to Collection',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Spacer(),
-                            TextButton.icon(
-                              icon: Icon(Icons.add),
-                              label: Text('New Collection'),
-                              onPressed: () async {
-                                // Close current sheet
-                                Navigator.pop(context);
-
-                                // Get new collection name
-                                final nameController = TextEditingController();
-                                final result = await showDialog<String>(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: Text('Create Collection'),
-                                    content: TextField(
-                                      controller: nameController,
-                                      decoration: InputDecoration(
-                                        labelText: 'Collection Name',
-                                      ),
-                                      autofocus: true,
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context),
-                                        child: Text('Cancel'),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.pop(
-                                              context, nameController.text);
-                                        },
-                                        child: Text('Create'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-
-                                if (result != null && result.isNotEmpty) {
-                                  final collection = await collectionsManager
-                                      .createCollection(result);
-                                  await collectionsManager.addMediaToCollection(
-                                      collection.id, mediaId);
-
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          'Added to new collection: ${collection.name}'),
-                                      backgroundColor: Colors.green,
-                                    ),
-                                  );
-                                } else {
-                                  // Reopen collection sheet if canceled
-                                  _showCollectionSelectionDialog();
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      Divider(),
-                      if (collections.isEmpty)
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                                'No collections yet. Create one to add this media.'),
-                          ),
-                        )
-                      else
-                        Expanded(
-                          child: ListView.builder(
-                            controller: scrollController,
-                            itemCount: collections.length,
-                            itemBuilder: (context, index) {
-                              final collection = collections[index];
-                              final isInCollection =
-                                  collection.containsMedia(mediaId);
-
-                              return CheckboxListTile(
-                                title: Text(collection.name),
-                                subtitle: Text('${collection.itemCount} items'),
-                                value: isInCollection,
-                                onChanged: (selected) async {
-                                  if (selected == true) {
-                                    await collectionsManager
-                                        .addMediaToCollection(
-                                            collection.id, mediaId);
-
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content:
-                                            Text('Added to ${collection.name}'),
-                                        duration: Duration(seconds: 1),
-                                      ),
-                                    );
-                                  } else {
-                                    await collectionsManager
-                                        .removeMediaFromCollection(
-                                            collection.id, mediaId);
-
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                            'Removed from ${collection.name}'),
-                                        duration: Duration(seconds: 1),
-                                      ),
-                                    );
-                                  }
-
-                                  // Force refresh of this stateful builder
-                                  setState(() {});
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                    ],
-                  );
-                },
-              );
-            },
-          );
-        },
-      );
     });
   }
 
@@ -559,20 +394,6 @@ class _MediaViewerScreenState extends State<MediaViewerScreen>
                               : null,
                         ),
                         Spacer(),
-                        // Action buttons
-                        Consumer<MediaService>(
-                          builder: (context, mediaService, _) {
-                            // Add to collection button (only used if collections are available)
-                            return IconButton(
-                              icon: Icon(Icons.collections),
-                              color: Colors.white,
-                              onPressed: () {
-                                _showCollectionSelectionDialog();
-                              },
-                            );
-                          },
-                        ),
-                        Spacer(),
                         IconButton(
                           icon: Icon(Icons.skip_next),
                           color: Colors.white,
@@ -595,11 +416,13 @@ class _MediaViewerScreenState extends State<MediaViewerScreen>
   Widget _buildMediaContent() {
     if (_currentMedia.isImage) {
       return ImageViewerWidget(
+        key: ValueKey(_currentMedia.id),
         mediaItem: _currentMedia,
         fullscreen: true,
       );
     } else if (_currentMedia.isVideo) {
       return VideoPlayerWidget(
+        key: ValueKey(_currentMedia.id),
         mediaItem: _currentMedia,
         fullscreen: true,
       );

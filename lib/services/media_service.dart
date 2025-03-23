@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:media_viewer/utils/heic_handler.dart';
 import '../models/media_item.dart';
 import '../models/media_source.dart';
@@ -71,16 +72,81 @@ class MediaService extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> refreshRandomMedia() async {
+    PaintingBinding.instance.imageCache.clear();
+    PaintingBinding.instance.imageCache.clearLiveImages();
+
+    await loadRandomMediaOnStartup();
+  }
+
   Future<void> loadRandomMediaOnStartup() async {
     if (_allMedia.isEmpty) {
       await refreshMedia();
     }
 
     if (_allMedia.isNotEmpty) {
+      // Filter out HEIC files for immediate display to avoid conversion delay
+      final nonHeicMedia = _allMedia.where((media) {
+        final extension = media.name.split('.').last.toLowerCase();
+        return extension != 'heic' && extension != 'heif';
+      }).toList();
+
+      // Use non-HEIC media if available, otherwise fall back to any media
+      final mediaToUse = nonHeicMedia.isNotEmpty ? nonHeicMedia : _allMedia;
+
       final random = Random();
-      final randomIndex = random.nextInt(_allMedia.length);
-      _currentRandomMedia = _allMedia[randomIndex];
+      final randomIndex = random.nextInt(mediaToUse.length);
+      _currentRandomMedia = mediaToUse[randomIndex];
+
+      // Start background conversion for any HEIC files in the collection
+      _startBackgroundHeicConversions();
+
       notifyListeners();
+    }
+  }
+
+  void _startBackgroundHeicConversions() {
+    // Process HEIC files in background to prepare them for later viewing
+    for (final media in _allMedia) {
+      if (media.isLocal) {
+        final extension = media.name.split('.').last.toLowerCase();
+        if (extension == 'heic' || extension == 'heif') {
+          final file = media.localFile;
+          if (file != null) {
+            HeicHandler.convertHeicFile(file, onComplete: (jpgPath) {
+              // Update the media item with the converted path
+              if (jpgPath != null) {
+                final updatedMedia = MediaItem(
+                  id: media.id,
+                  name: media.name,
+                  path: media.path,
+                  type: media.type,
+                  source: media.source,
+                  dateCreated: media.dateCreated,
+                  dateModified: media.dateModified,
+                  thumbnailPath: jpgPath,
+                  metadata: {
+                    ...?media.metadata,
+                    'convertedJpgPath': jpgPath,
+                  },
+                  downloadUrl: media.downloadUrl,
+                  cloudId: media.cloudId,
+                );
+
+                // Replace the media item in the list
+                final index = _allMedia.indexWhere((m) => m.id == media.id);
+                if (index >= 0) {
+                  _allMedia[index] = updatedMedia;
+                  // Only notify listeners if this is not during initial load
+                  if (!_isLoading) {
+                    notifyListeners();
+                  }
+                }
+              }
+            });
+          }
+        }
+      }
     }
   }
 

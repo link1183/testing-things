@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:media_viewer/utils/file_utils.dart';
 import 'package:provider/provider.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import '../services/preferences_service.dart';
 import '../services/storage_service.dart';
@@ -24,7 +24,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _calculateCacheSize() async {
     try {
-      final cacheDir = await getTemporaryDirectory();
+      final cacheDir = await FileUtils.getAppTempDirectory();
       final cacheSize = await _getTotalDirectorySize(cacheDir);
       final cacheSizeInMB = (cacheSize / (1024 * 1024)).toStringAsFixed(2);
 
@@ -63,7 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
 
     try {
-      final cacheDir = await getTemporaryDirectory();
+      final cacheDir = await FileUtils.getAppTempDirectory();
       final entities = cacheDir.listSync(recursive: true, followLinks: false);
 
       for (final entity in entities) {

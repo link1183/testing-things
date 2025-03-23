@@ -116,32 +116,28 @@ class StorageService extends ChangeNotifier {
                 // Attempt conversion to get thumbnail
                 final jpgPath =
                     await HeicHandler.getDisplayableImage(File(entity.path));
-                if (jpgPath != null) {
-                  // Store conversion info in metadata for quick access later
-                  final Map<String, dynamic> updatedMetadata =
-                      mediaItem.metadata ?? {};
-                  updatedMetadata['convertedJpgPath'] = jpgPath;
 
-                  final updatedItem = MediaItem(
-                    id: mediaItem.id,
-                    name: mediaItem.name,
-                    path: mediaItem.path,
-                    type: mediaItem.type,
-                    source: mediaItem.source,
-                    dateCreated: mediaItem.dateCreated,
-                    dateModified: mediaItem.dateModified,
-                    thumbnailPath:
-                        jpgPath.path, // Use the converted JPG as thumbnail
-                    metadata: updatedMetadata,
-                    downloadUrl: mediaItem.downloadUrl,
-                    cloudId: mediaItem.cloudId,
-                  );
+                // Store conversion info in metadata for quick access later
+                final Map<String, dynamic> updatedMetadata =
+                    mediaItem.metadata ?? {};
+                updatedMetadata['convertedJpgPath'] = jpgPath;
 
-                  mediaItems.add(updatedItem);
-                } else {
-                  // Conversion failed, but still add the original item
-                  mediaItems.add(mediaItem);
-                }
+                final updatedItem = MediaItem(
+                  id: mediaItem.id,
+                  name: mediaItem.name,
+                  path: mediaItem.path,
+                  type: mediaItem.type,
+                  source: mediaItem.source,
+                  dateCreated: mediaItem.dateCreated,
+                  dateModified: mediaItem.dateModified,
+                  thumbnailPath:
+                      jpgPath.path, // Use the converted JPG as thumbnail
+                  metadata: updatedMetadata,
+                  downloadUrl: mediaItem.downloadUrl,
+                  cloudId: mediaItem.cloudId,
+                );
+
+                mediaItems.add(updatedItem);
               } else {
                 // Regular non-HEIC media file
                 final mediaItem = MediaItem.fromFile(entity);

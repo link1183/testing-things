@@ -27,16 +27,31 @@ class _ImageViewerWidgetState extends State<ImageViewerWidget> {
   bool _isLoading = false;
   String? _error;
 
+  String? _currentMediaId;
+
   @override
   void initState() {
     super.initState();
     _loadImageFile();
   }
 
+  @override
+  void didUpdateWidget(ImageViewerWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_currentMediaId != oldWidget.mediaItem.id) {
+      _localFile = null;
+      _loadImageFile();
+    }
+  }
+
   Future<void> _loadImageFile() async {
+    _currentMediaId = widget.mediaItem.id;
+
     if (widget.mediaItem.isLocal) {
       setState(() {
+        _localFile = null;
         _isLoading = true;
+        _error = null;
       });
 
       try {
@@ -46,17 +61,10 @@ class _ImageViewerWidgetState extends State<ImageViewerWidget> {
           if (HeicHandler.isHeicFile(file.path)) {
             final displayableFile = await HeicHandler.getDisplayableImage(file);
 
-            if (displayableFile != null) {
-              setState(() {
-                _localFile = displayableFile;
-                _isLoading = false;
-              });
-            } else {
-              setState(() {
-                _error = 'Unable to dispaly HEIC image';
-                _isLoading = false;
-              });
-            }
+            setState(() {
+              _localFile = displayableFile;
+              _isLoading = false;
+            });
           } else {
             setState(() {
               _localFile = file;
